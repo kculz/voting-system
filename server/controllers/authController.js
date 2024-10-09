@@ -66,6 +66,7 @@ const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    console.log(email)
     // Validation
     if (validator.isEmpty(email) && validator.isEmpty(password)) {
       return res.json({
@@ -124,10 +125,10 @@ const adminLogin = async (req, res) => {
 
 const registerAdmin = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
     // validation
-    const data = { email, password };
+    const data = { email, password, role };
 
     const errors = addAdminValidation(data);
 
@@ -146,6 +147,7 @@ const registerAdmin = async (req, res) => {
     await Admin.create({
       email,
       password: encryptedPassword,
+      role
     });
 
     // Success Response

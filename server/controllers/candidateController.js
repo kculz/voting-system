@@ -2,11 +2,149 @@ const admin = require('firebase-admin');
 
 const serviceAccount = require('../utils/service-acc.json');
 const { Candidate, User } = require('../models');
+const { json } = require('sequelize');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   storageBucket: 'voting-201b3.appspot.com',
 });
+
+const getPresCandidates = async(req, res) => {
+
+  try {
+    const presCand = await Candidate.findAll({
+      where: {
+        position: 'President'
+      },
+      include: [
+        {
+          model: User
+        }
+      ]
+    });
+
+    if(!presCand){
+      return res.json({
+        success: false,
+        msg: "No Presidential candidates found!"
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: presCand,
+      msg: "Success"
+    });
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      success: false,
+      msg: error.message
+    });
+  }
+}
+
+const getVpCandidates = async (req, res) => {
+  try {
+    const presCand = await Candidate.findAll({
+      where: {
+        position: 'Vice President',
+      },
+      include: [
+        {
+          model: User,
+        },
+      ],
+    });
+
+    if (!presCand) {
+      return res.json({
+        success: false,
+        msg: 'No Vice Presidential candidates found!',
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: presCand,
+      msg: 'Success',
+    });
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      success: false,
+      msg: error.message,
+    });
+  }
+};
+
+const getFMCandidates = async (req, res) => {
+  try {
+    const presCand = await Candidate.findAll({
+      where: {
+        position: 'Finance Manager',
+      },
+      include: [
+        {
+          model: User,
+        },
+      ],
+    });
+
+    if (!presCand) {
+      return res.json({
+        success: false,
+        msg: 'No Financial Managers candidates found!',
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: presCand,
+      msg: 'Success',
+    });
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      success: false,
+      msg: error.message,
+    });
+  }
+};
+
+const getENCandidates = async (req, res) => {
+  try {
+    const presCand = await Candidate.findAll({
+      where: {
+        position: 'Entertainment',
+      },
+      include: [
+        {
+          model: User,
+        },
+      ],
+    });
+
+    if (!presCand) {
+      return res.json({
+        success: false,
+        msg: 'No Entertainment candidates found!',
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: presCand,
+      msg: 'Success',
+    });
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      success: false,
+      msg: error.message,
+    });
+  }
+};
 
 const get = async (req, res) => {
   try {
@@ -101,4 +239,8 @@ module.exports.CANDIDATECONTROLLER = {
   edit,
   remove,
   get,
+  getENCandidates,
+  getFMCandidates,
+  getPresCandidates,
+  getVpCandidates
 };

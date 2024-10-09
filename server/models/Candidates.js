@@ -31,7 +31,6 @@ module.exports = (sequelize, DataTypes) => {
   Candidate.associate = (model) => {
     Candidate.belongsTo(model.User, {
       foreignKey: 'id_number',
-      as: "cand"
     });
   };
 
