@@ -127,6 +127,8 @@ const registerAdmin = async (req, res) => {
   try {
     const { email, password, role } = req.body;
 
+    console.log(email, password, role)
+
     // validation
     const data = { email, password, role };
 

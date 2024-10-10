@@ -1,8 +1,10 @@
 const validator = require("validator");
-const errors = {};
 
 module.exports = {
-     addAdminValidation: (data) => {
+    
+    addAdminValidation: (data) => {
+        const errors = {};
+
         if(!validator.isEmail(data.email)){
             errors.email = 'Please provide valid email!';
         }
@@ -15,6 +17,6 @@ module.exports = {
             errors.role = 'Admin role is not defined!';
         }
 
-        return errors;
+        return errors;  
     }
 }
