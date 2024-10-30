@@ -1,5 +1,5 @@
 const validator = require('validator');
-const { User } = require('../models');
+const { User, Admin } = require('../models');
 const bcrypt = require('bcryptjs');
 const { validateStudent } = require('../utils/addUserValidation');
 
@@ -64,6 +64,59 @@ const addUser = async (req, res) => {
   }
 };
 
+const get = async (req, res) => {
+
+  try {
+    const students = await User.findAll();
+
+    if(students.length <= 0){
+      return res.json({
+        success: true,
+        msg: "No Students yet!",
+        data: 0
+      });
+    }
+
+    return res.json({
+      success: true,
+      msg: "Success",
+      data: students
+    });
+  } catch (error) {
+    return res.json({
+      success: false,
+      msg: error.message,
+      error: "Interenal server error!"
+    });
+  }
+}
+
+const getAdmins = async (req, res) => {
+
+  try {
+    const admins = await Admin.findAll();
+
+    if(!admins) {
+      return res.json({
+        success: false,
+        msg: "No admin users found!"
+      });
+    }
+
+    return res.json({
+      success: true,
+      msg: "Success",
+      data: admins
+    })
+  } catch (err) {
+    return res.json({
+      success: false,
+      msg: err.message,
+      error: "Internal server error!"
+    })
+  }
+}
+
 const changePassword = async (req, res) => {
   try {
   } catch (error) {
@@ -90,4 +143,6 @@ module.exports.USERCONTROLLER = {
   changePassword,
   editProfile,
   addUser,
+  get,
+  getAdmins
 };

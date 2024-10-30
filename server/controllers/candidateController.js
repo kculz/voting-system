@@ -1,7 +1,7 @@
 const admin = require('firebase-admin');
 
 const serviceAccount = require('../utils/service-acc.json');
-const { Candidate, User } = require('../models');
+const { Candidate, User, sequelize } = require('../models');
 const { json } = require('sequelize');
 
 admin.initializeApp({
@@ -78,11 +78,11 @@ const getVpCandidates = async (req, res) => {
   }
 };
 
-const getFMCandidates = async (req, res) => {
+const getSGCandidates = async (req, res) => {
   try {
     const presCand = await Candidate.findAll({
       where: {
-        position: 'Finance Manager',
+        position: 'Secretary General',
       },
       include: [
         {
@@ -94,7 +94,7 @@ const getFMCandidates = async (req, res) => {
     if (!presCand) {
       return res.json({
         success: false,
-        msg: 'No Financial Managers candidates found!',
+        msg: 'No Secretary General candidates found!',
       });
     }
 
@@ -112,11 +112,11 @@ const getFMCandidates = async (req, res) => {
   }
 };
 
-const getENCandidates = async (req, res) => {
+const getTRCandidates = async (req, res) => {
   try {
     const presCand = await Candidate.findAll({
       where: {
-        position: 'Entertainment',
+        position: 'Treasurer',
       },
       include: [
         {
@@ -128,7 +128,7 @@ const getENCandidates = async (req, res) => {
     if (!presCand) {
       return res.json({
         success: false,
-        msg: 'No Entertainment candidates found!',
+        msg: 'No Treasurer candidates found!',
       });
     }
 
@@ -234,13 +234,63 @@ const remove = async (req, res) => {
     });
   }
 };
+
+const getWinners = async (req, res) => {
+  try {
+    const winners = await Candidate.findAll({
+      attributes: ['position', 'id_number', 'votes', 'party', 'avator'],
+      include: [{
+        model: User,
+        attributes: ['fullname', 'level', 'course']
+      }],
+      group: ['position'],
+      order: [[sequelize.fn('max', sequelize.col('votes')), 'DESC']],
+      raw: true,
+    });
+
+    if (!winners) {
+      return res.json({
+        success: false,
+        msg: 'No candidates found',
+      });
+    }
+
+    const winnersByPosition = winners.map((winner) => {
+      const user = {};
+      Object.keys(winner).forEach((key) => {
+        if (key.startsWith('User.')) {
+          user[key.replace('User.', '')] = winner[key];
+          delete winner[key];
+        }
+      });
+      winner.User = user;
+      return winner;
+    }).reduce((acc, winner) => {
+      acc[winner.position] = winner;
+      return acc;
+    }, {});
+
+    return res.json({
+      success: true,
+      data: winnersByPosition,
+    });
+  } catch (err) {
+    return res.json({
+      success: false,
+      msg: err.message,
+      error: 'Internal server error!',
+    });
+  }
+};
+
 module.exports.CANDIDATECONTROLLER = {
   add,
   edit,
   remove,
   get,
-  getENCandidates,
-  getFMCandidates,
+  getSGCandidates,
+  getTRCandidates,
   getPresCandidates,
-  getVpCandidates
+  getVpCandidates,
+  getWinners
 };

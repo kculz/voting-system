@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     party: {
-      type: DataTypes.ENUM(['ZICOSO', 'ZINASU', 'Independent']),
+      type: DataTypes.ENUM(['Youth United', 'Campus Voices']),
       allowNull: false,
     },
     votes: {

@@ -1,5 +1,6 @@
 // Import User and Candidate models
-const { User, Candidate } = require('../models');
+const { Op } = require('sequelize');
+const { User, Candidate, sequelize } = require('../models');
 
 const vote = async (req, res) => {
   try {
@@ -48,23 +49,23 @@ const vote = async (req, res) => {
         }
         break;
 
-      case 'Finance Manager':
+      case 'Secretary General':
         if (!user.votedForFM) {
           user.votedForFM = true;
           voteSuccess = true;
-          message = 'Voted for Finance Manager successfully. You can vote for other candidates now!';
+          message = 'Voted for Secretary General successfully. You can vote for other candidates now!';
         } else {
-          return res.json({ success: false, msg: 'You have already voted for Finance Manager!' });
+          return res.json({ success: false, msg: 'You have already voted for Secretary General!' });
         }
         break;
 
-      case 'Entertainment':
+      case 'Treasurer':
         if (!user.votedForEN) {
           user.votedForEN = true;
           voteSuccess = true;
-          message = 'Voted for Entertainment successfully. You can vote for other candidates now!';
+          message = 'Voted for Treasurer successfully. You can vote for other candidates now!';
         } else {
-          return res.json({ success: false, msg: 'You have already voted for Entertainment!' });
+          return res.json({ success: false, msg: 'You have already voted for Treasurer!' });
         }
         break;
 
@@ -88,5 +89,54 @@ const vote = async (req, res) => {
   }
 };
 
-// Export vote controller
-module.exports.VOTECONTROLLER = { vote };
+
+const getVotesByPositionAndParty = async (req, res) => {
+  try {
+
+    // Group votes by position and party
+    const votesData = await Candidate.findAll({
+      attributes: ['position', 'party', [sequelize.fn('SUM', sequelize.col('votes')), 'totalVotes']],
+      group: ['position', 'party'],
+    });
+
+    // Get total number of students
+    const totalStudents = await User.count();
+
+
+    // Get total number of students who have voted in any position
+    const totalVoted = await User.count({
+      where: {
+        [Op.or]: [
+          { votedForPres: true },
+          { votedForVP: true },
+          { votedForFM: true },
+          { votedForEN: true },
+        ],
+      },
+    });
+
+
+    // Format response for easier frontend usage
+    const formattedData = votesData.reduce((acc, curr) => {
+      const { position, party, totalVotes } = curr.get();
+      if (!acc[position]) acc[position] = {};
+      acc[position][party] = totalVotes;
+      return acc;
+    }, {});
+
+    return res.json({
+      success: true,
+      data: formattedData,
+      totalStudents,
+      totalVoted,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      msg: error.message,
+      error: 'Internal server error!',
+    });
+  }
+};
+
+module.exports.VOTECONTROLLER = { vote, getVotesByPositionAndParty };
